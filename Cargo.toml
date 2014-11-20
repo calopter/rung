@@ -1,0 +1,9 @@
+[package]
+
+name = "rung_vm"
+version = "0.0.1"
+authors = [ "Sam Putman <atmanistan@gmail.com>" ]
+
+[[bin]]
+
+name = "rung_vm"
