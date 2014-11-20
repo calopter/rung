@@ -13,6 +13,7 @@ struct VM {
     data: [Cell, ..STACK_DEPTH],
     address: [Cell, ..ADDRESSES],
     ports: [Cell, ..PORTS],
+    image: [Cell, ..IMAGE_SIZE],
 }
 impl Default for VM {
     fn default() -> VM {
@@ -23,6 +24,7 @@ impl Default for VM {
             data : [NOP, ..STACK_DEPTH],
             address : [NOP, ..ADDRESSES],
             ports: [NOP, ..PORTS],
+            image: [NOP, ..IMAGE_SIZE],
         }
     }
 }
@@ -82,7 +84,7 @@ const NUM_OPS:   Cell = Cell(WAIT.0 + 1) ;
 
 
 fn main() {
-    let mut vm = VM { ..Default::default() };
+    let mut box vm = VM { ..Default::default() };
     vm.ip = ZERO_EXIT;
     let (Cell(rsp), Cell(sp), Cell(ip)) = (vm.rsp, vm.sp, vm.ip);
     println!("VM State: x: {} , y: {}, rsp: {} ", sp, ip, rsp  );
