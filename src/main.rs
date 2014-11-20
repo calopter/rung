@@ -6,8 +6,6 @@
 
 
 struct VM {
-    x: int,
-    y: int,
     sp: Cell,
     ip: Cell,
     rsp: Cell,
@@ -58,19 +56,18 @@ const IN:        Cell = Cell(27);
 const OUT:       Cell = Cell(28);
 const WAIT:      Cell = Cell(29);
 
-const NUM_OPS: u32 = WAIT.0 + 1 ; // fancy tuple accessor syntax
+const NUM_OPS:   Cell = Cell(WAIT.0 + 1) ;
 
 
 
 fn main() {
-    let mut vm = VM { x: 5,
-                      y: 7,
+    let mut vm = VM {
                       sp: NOP,
                       ip:  Cell(0),
                       rsp: Cell(23),
                     };
-    vm.x = 14;
-    let Cell(rsp) = vm.rsp;
-    println!("VM State: x: {} , y: {}, rsp: {} ", vm.x, vm.y, rsp  );
+    vm.ip = ZERO_EXIT;
+    let (Cell(rsp), Cell(sp), Cell(ip)) = (vm.rsp, vm.sp, vm.ip);
+    println!("VM State: x: {} , y: {}, rsp: {} ", sp, ip, rsp  );
 
 }
