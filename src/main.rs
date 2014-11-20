@@ -3,6 +3,7 @@
 //Rusty stuff
 #![feature(tuple_indexing)]
 use std::default::Default;
+use std::fmt;
 
 
 struct VM {
@@ -10,10 +11,24 @@ struct VM {
     ip: Cell,
     rsp: Cell,
     data: [Cell, ..STACK_DEPTH],
+    address: [Cell, ..ADDRESSES],
+    ports: [Cell, ..PORTS],
 }
 impl Default for VM {
     fn default() -> VM {
-        VM { data : [NOP, ..STACK_DEPTH], sp: Cell(0), ip: Cell(128), rsp: Cell(256)  }
+        VM {
+            sp: Cell(0),
+            ip: Cell(128),
+            rsp: Cell(256),
+            data : [NOP, ..STACK_DEPTH],
+            address : [NOP, ..ADDRESSES],
+            ports: [NOP, ..PORTS],
+        }
+    }
+}
+impl fmt:: Show for VM {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "({}, {})", self.sp.0, self.ip.0)
     }
 }
 
@@ -21,14 +36,14 @@ struct Cell (u32);
 
 //Virtual Machine Parameters
 const STACK_DEPTH:           uint =  128;
-const IMAGE_SIZE:            int =  1000000;
-const ADDRESSES:             int =  1024;
-const PORTS:                 int =  12;
-const MAX_FILE_NAME:         int =  1024;
-const MAX_REQUEST_LENGTH:    int =  1024;
-const MAX_OPEN_FILES:        int =  8;
-const LOCAL:        &'static str = "retroImage" ;
-const CELLSIZE:              int = 32;
+const IMAGE_SIZE:            uint =  1000000;
+const ADDRESSES:             uint =  1024;
+const PORTS:                 uint =  12;
+const MAX_FILE_NAME:         uint =  1024;
+const MAX_REQUEST_LENGTH:    uint =  1024;
+const MAX_OPEN_FILES:        uint =  8;
+const LOCAL:        &'static str  = "retroImage" ;
+const CELLSIZE:              uint = 32;
 
 //Ngaro VM Opcodes
 const NOP:       Cell = Cell(0);
@@ -71,5 +86,6 @@ fn main() {
     vm.ip = ZERO_EXIT;
     let (Cell(rsp), Cell(sp), Cell(ip)) = (vm.rsp, vm.sp, vm.ip);
     println!("VM State: x: {} , y: {}, rsp: {} ", sp, ip, rsp  );
+    println!("VM (Formatted) : {}", vm);
 
 }
