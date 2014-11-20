@@ -54,6 +54,8 @@ const IN:        Cell = Cell(27);
 const OUT:       Cell = Cell(28);
 const WAIT:      Cell = Cell(29);
 
+const NUM_OPS: int = Cell(WAIT) + 1i ;
+
 
 
 fn main() {
