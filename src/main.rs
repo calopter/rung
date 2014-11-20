@@ -84,7 +84,7 @@ const NUM_OPS:   Cell = Cell(WAIT.0 + 1) ;
 
 
 fn main() {
-    let mut box vm = VM { ..Default::default() };
+    let mut vm = box VM { ..Default::default() };
     vm.ip = ZERO_EXIT;
     let (Cell(rsp), Cell(sp), Cell(ip)) = (vm.rsp, vm.sp, vm.ip);
     println!("VM State: x: {} , y: {}, rsp: {} ", sp, ip, rsp  );
