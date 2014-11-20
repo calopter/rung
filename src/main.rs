@@ -9,7 +9,7 @@ struct VM {
 
 
 fn main() {
-    let vm = VM { x: 5, y: 7 };
+    let mut vm = VM { x: 5, y: 7 };
     println!("VM State: x: {} , y: {}", vm.x, vm.y);
 
 }
