@@ -9,6 +9,7 @@ struct VM {
     sp: Cell,
     ip: Cell,
     rsp: Cell,
+    data: [Cell ..STACK_DEPTH],
 }
 
 struct Cell (u32);
