@@ -2,20 +2,25 @@
 
 //Rusty stuff
 #![feature(tuple_indexing)]
-
+use std::default::Default;
 
 
 struct VM {
     sp: Cell,
     ip: Cell,
     rsp: Cell,
-    data: [Cell ..STACK_DEPTH],
+    data: [Cell, ..STACK_DEPTH],
+}
+impl Default for VM {
+    fn default() -> VM {
+        VM { data : [NOP, ..STACK_DEPTH], sp: Cell(0), ip: Cell(128), rsp: Cell(256)  }
+    }
 }
 
 struct Cell (u32);
 
 //Virtual Machine Parameters
-const STACK_DEPTH:           int =  128;
+const STACK_DEPTH:           uint =  128;
 const IMAGE_SIZE:            int =  1000000;
 const ADDRESSES:             int =  1024;
 const PORTS:                 int =  12;
@@ -62,11 +67,7 @@ const NUM_OPS:   Cell = Cell(WAIT.0 + 1) ;
 
 
 fn main() {
-    let mut vm = VM {
-                      sp: NOP,
-                      ip:  Cell(0),
-                      rsp: Cell(23),
-                    };
+    let mut vm = VM { ..Default::default() };
     vm.ip = ZERO_EXIT;
     let (Cell(rsp), Cell(sp), Cell(ip)) = (vm.rsp, vm.sp, vm.ip);
     println!("VM State: x: {} , y: {}, rsp: {} ", sp, ip, rsp  );
