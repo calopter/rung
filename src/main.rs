@@ -4,16 +4,57 @@
 struct VM {
     x: int,
     y: int,
-    zed: Cell,
-
+    sp: Cell,
+    ip: Cell,
+    rsp: Cell,
 }
 
 struct Cell (u32);
 
+enum Op {
+    Nop,
+    Lit,
+    Dup,
+    Drop,
+    Swap,
+    Push,
+    Pop,
+    Loop,
+    Jump,
+    Return,
+    GtJump,
+    LtJump,
+    NeJump,
+    EqJump,
+    Fetch,
+    Store,
+    Add,
+    Sub,
+    Mul,
+    DivMod,
+    And,
+    Or,
+    Xor,
+    Shl,
+    Shr,
+    ZeroExit,
+    Inc,
+    Dec,
+    In,
+    Out,
+    Wait
+
+}
+
 fn main() {
-    let mut vm = VM { x: 5, y: 7, zed: Cell(23) };
+    let mut vm = VM { x: 5,
+                      y: 7,
+                      sp: Cell(0),
+                      ip:  Cell(0),
+                      rsp: Cell(23),
+                    };
     vm.x = 14;
-    let Cell(zed) = vm.zed;
-    println!("VM State: x: {} , y: {}, zed: {} ", vm.x, vm.y, zed  );
+    let Cell(rsp) = vm.rsp;
+    println!("VM State: x: {} , y: {}, rsp: {} ", vm.x, vm.y, rsp  );
 
 }
