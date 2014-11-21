@@ -15,6 +15,7 @@ struct VM {
     ports: [Cell, ..PORTS],
     image: Box<Image>,
 }
+
 struct Image([Cell, ..IMAGE_SIZE]);
 
 impl Default for VM {
@@ -33,13 +34,18 @@ impl Default for VM {
         }
     }
 }
-impl fmt:: Show for VM {
+impl fmt::Show for VM {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "({}, {})", self.sp.0, self.ip.0)
     }
 }
 
 struct Cell (u32);
+impl fmt::Show for Cell {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write! (f, "{}", self.0)
+    }
+}
 
 //Virtual Machine Parameters
 const STACK_DEPTH:           uint =  128;
@@ -86,13 +92,13 @@ const WAIT:      Cell = Cell(29);
 
 const NUM_OPS:   Cell = Cell(WAIT.0 + 1) ;
 
-
-
 fn main() {
     let mut vm = VM { ..Default::default() };
     vm.ip = ZERO_EXIT;
     let (Cell(rsp), Cell(sp), Cell(ip)) = (vm.rsp, vm.sp, vm.ip);
     println!("VM State: x: {} , y: {}, rsp: {} ", sp, ip, rsp  );
     println!("VM (Formatted) : {}", vm);
+    let img_int = &vm.image.0;
+    println!("Printed from the Image: {}", img_int[5]);
 
 }
