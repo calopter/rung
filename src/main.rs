@@ -28,7 +28,7 @@ impl Default for VM {
             address : [NOP, ..ADDRESSES],
             ports: [NOP, ..PORTS],
             image: {
-                    let img = box Image([NOP, ..IMAGE_SIZE]);
+                    let img = box Image([INIT, ..IMAGE_SIZE]);
                     img
             }
         }
@@ -90,6 +90,9 @@ const IN:        Cell = Cell(27);
 const OUT:       Cell = Cell(28);
 const WAIT:      Cell = Cell(29);
 
+//Clearing constant
+const INIT:      Cell = Cell(0xDEADC0DE);
+
 const NUM_OPS:   Cell = Cell(WAIT.0 + 1) ;
 
 fn main() {
@@ -98,7 +101,7 @@ fn main() {
     let (Cell(rsp), Cell(sp), Cell(ip)) = (vm.rsp, vm.sp, vm.ip);
     println!("VM State: x: {} , y: {}, rsp: {} ", sp, ip, rsp  );
     println!("VM (Formatted) : {}", vm);
-    let img_int = &vm.image.0;
-    println!("Printed from the Image: {}", img_int[5]);
+    let image = &vm.image.0;
+    println!("Printed from the Image: {:x}", image[5].0);
 
 }

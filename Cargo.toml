@@ -3,7 +3,16 @@
 name = "rung_vm"
 version = "0.0.1"
 authors = [ "Sam Putman <atmanistan@gmail.com>" ]
+description = "A Ngaro virtual machine."
+repository = "https://github.com/mnemnion/rung"
+readme = "README.md"
+keywords = ["ngaro", "retro", "Forth", "VM"]
+license = "BSD-2-Clause"
+
+
 
 [[bin]]
 
 name = "rung_vm"
+
+
