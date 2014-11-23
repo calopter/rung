@@ -38,9 +38,7 @@ impl Default for VM {
             data : [Cell(NOP), ..STACK_DEPTH],
             address : [Cell(NOP), ..ADDRESSES],
             ports: [Cell(NOP), ..PORTS],
-            image: {
-                     box Image([INIT, ..IMAGE_SIZE])
-            },
+            image:  box Image([INIT, ..IMAGE_SIZE]) ,
             stats: [0, ..30], //replace: NUM_OPS
             max_rsp: ADDRESSES,
             max_sp: STACK_DEPTH,
