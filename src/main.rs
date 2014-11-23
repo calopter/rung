@@ -11,9 +11,9 @@ type CellInt = i32 ;
 
 
 struct VM {
-    sp: Cell,
-    ip: Cell,
-    rsp: Cell,
+    sp: CellInt,
+    ip: CellInt,
+    rsp: CellInt,
     data: [Cell, ..STACK_DEPTH],
     address: [Cell, ..ADDRESSES],
     ports: [Cell, ..PORTS],
@@ -21,6 +21,10 @@ struct VM {
 //    stats: [uint, ..NUM_OPS],
 // *requires compiler to catch up with syntax
     stats: [uint, ..30],
+    max_rsp: uint,
+    max_sp: uint,
+    filename: String,
+    request: String,
 }
 
 struct Image([Cell, ..IMAGE_SIZE]);
@@ -28,25 +32,38 @@ struct Image([Cell, ..IMAGE_SIZE]);
 impl Default for VM {
     fn default() -> VM {
         VM {
-            sp: Cell(0),
-            ip: Cell(128),
-            rsp: Cell(256),
-            data : [NOP, ..STACK_DEPTH],
-            address : [NOP, ..ADDRESSES],
-            ports: [NOP, ..PORTS],
+            sp: 0,
+            ip: 128,
+            rsp: 256,
+            data : [Cell(NOP), ..STACK_DEPTH],
+            address : [Cell(NOP), ..ADDRESSES],
+            ports: [Cell(NOP), ..PORTS],
             image: {
                     let img = box Image([INIT, ..IMAGE_SIZE]);
                     img
             },
             stats: [0, ..30], //replace: NUM_OPS
+            max_rsp: ADDRESSES,
+            max_sp: STACK_DEPTH,
+            filename: String::new(),
+            request: String::new(),
 
         }
     }
 }
 impl fmt::Show for VM {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+/*    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "({}, {})", self.sp.0, self.ip.0)
+    } */
+
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut s = String::new();
+        s.push_str("Stack: ");
+        s.push_str(self.ip.to_string().as_slice());
+      //  s.push_str("
+        write!(f,"{}",s)
     }
+
 }
 
 struct Cell (CellInt);
@@ -68,47 +85,46 @@ const LOCAL:        &'static str  = "retroImage" ;
 const CELLSIZE:              uint = 32;
 
 //Ngaro VM Opcodes
-const NOP:       Cell = Cell(0);
-const LIT:       Cell = Cell(1);
-const DUP:       Cell = Cell(2);
-const DROP:      Cell = Cell(3);
-const SWAP:      Cell = Cell(4);
-const PUSH:      Cell = Cell(5);
-const POP:       Cell = Cell(6);
-const LOOP:      Cell = Cell(7);
-const JUMP:      Cell = Cell(8);
-const RETURN:    Cell = Cell(9);
-const GT_JUMP:   Cell = Cell(10);
-const LT_JUMP:   Cell = Cell(11);
-const NE_JUMP:   Cell = Cell(12);
-const EQ_JUMP:   Cell = Cell(13);
-const FETCH:     Cell = Cell(14);
-const STORE:     Cell = Cell(15);
-const ADD:       Cell = Cell(16);
-const SUB:       Cell = Cell(17);
-const MUL:       Cell = Cell(18);
-const DIVMOD:    Cell = Cell(19);
-const AND:       Cell = Cell(20);
-const OR:        Cell = Cell(21);
-const XOR:       Cell = Cell(22);
-const SHL:       Cell = Cell(23);
-const ZERO_EXIT: Cell = Cell(24);
-const INC:       Cell = Cell(25);
-const DEC:       Cell = Cell(26);
-const IN:        Cell = Cell(27);
-const OUT:       Cell = Cell(28);
-const WAIT:      Cell = Cell(29);
+const NOP:      CellInt = 0;
+const LIT:      CellInt = 1;
+const DUP:      CellInt = 2;
+const DROP:     CellInt = 3;
+const SWAP:     CellInt = 4;
+const PUSH:     CellInt = 5;
+const POP:      CellInt = 6;
+const LOOP:     CellInt = 7;
+const JUMP:     CellInt = 8;
+const RETURN:   CellInt = 9;
+const GT_JUMP:  CellInt = 10;
+const LT_JUMP:  CellInt = 11;
+const NE_JUMP:  CellInt = 12;
+const EQ_JUMP:  CellInt = 13;
+const FETCH:    CellInt = 14;
+const STORE:    CellInt = 15;
+const ADD:      CellInt = 16;
+const SUB:      CellInt = 17;
+const MUL:      CellInt = 18;
+const DIVMOD:   CellInt = 19;
+const AND:      CellInt = 20;
+const OR:       CellInt = 21;
+const XOR:      CellInt = 22;
+const SHL:      CellInt = 23;
+const ZERO_EXIT:CellInt = 24;
+const INC:      CellInt = 25;
+const DEC:      CellInt = 26;
+const IN:       CellInt = 27;
+const OUT:      CellInt = 28;
+const WAIT:     CellInt = 29;
 
 //Clearing constant
-const INIT:      Cell = Cell(0xDEADC0DE);
+const INIT:      Cell = Cell(0x0000DEAD);
 
-const NUM_OPS:   CellInt  = WAIT.0 + 1 ;
+const NUM_OPS:   CellInt  = WAIT + 1 ;
 
 fn main() {
     let mut vm = VM { ..Default::default() };
-    vm.ip = ZERO_EXIT;
-    let (Cell(rsp), Cell(sp), Cell(ip)) = (vm.rsp, vm.sp, vm.ip);
-    println!("VM State: x: {} , y: {}, rsp: {} ", sp, ip, rsp  );
+ //   let (Cell(rsp), Cell(sp), Cell(ip)) = (vm.rsp, vm.sp, vm.ip);
+    println!("VM State: x: {} , y: {}, rsp: {} ", vm.sp, vm.ip, vm.rsp  );
     println!("VM (Formatted) : {}", vm);
     let image = &vm.image.0;
     println!("Printed from the Image: {:x}", image[5].0);
