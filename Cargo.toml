@@ -6,7 +6,7 @@ authors = [ "Sam Putman <atmanistan@gmail.com>" ]
 description = "A Ngaro virtual machine."
 repository = "https://github.com/mnemnion/rung"
 readme = "README.md"
-keywords = ["ngaro", "retro", "Forth", "VM"]
+keywords = ["ngaro", "retro", "Forth", "VM", "virtual machine"]
 license = "BSD-2-Clause"
 
 

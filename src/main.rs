@@ -1,6 +1,8 @@
 // Rung: A Rust Ngaro VM
+//
+// Rusty stuff
+//
 
-//Rusty stuff
 #![feature(tuple_indexing)]
 use std::default::Default;
 use std::fmt;
@@ -14,6 +16,9 @@ struct VM {
     address: [Cell, ..ADDRESSES],
     ports: [Cell, ..PORTS],
     image: Box<Image>,
+//    stats: [uint, ..NUM_OPS],
+// *requires compiler to catch up with syntax
+    stats: [uint, ..30],
 }
 
 struct Image([Cell, ..IMAGE_SIZE]);
@@ -31,6 +36,7 @@ impl Default for VM {
                     let img = box Image([INIT, ..IMAGE_SIZE]);
                     img
             }
+
         }
     }
 }
@@ -93,7 +99,7 @@ const WAIT:      Cell = Cell(29);
 //Clearing constant
 const INIT:      Cell = Cell(0xDEADC0DE);
 
-const NUM_OPS:   Cell = Cell(WAIT.0 + 1) ;
+const NUM_OPS:   uint = WAIT.0 + 1 ;
 
 fn main() {
     let mut vm = VM { ..Default::default() };
