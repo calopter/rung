@@ -7,6 +7,8 @@
 use std::default::Default;
 use std::fmt;
 
+type CellInt = i32 ;
+
 
 struct VM {
     sp: Cell,
@@ -35,7 +37,8 @@ impl Default for VM {
             image: {
                     let img = box Image([INIT, ..IMAGE_SIZE]);
                     img
-            }
+            },
+            stats: [0, ..30], //replace: NUM_OPS
 
         }
     }
@@ -46,7 +49,7 @@ impl fmt::Show for VM {
     }
 }
 
-struct Cell (u32);
+struct Cell (CellInt);
 impl fmt::Show for Cell {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write! (f, "{}", self.0)
@@ -99,7 +102,7 @@ const WAIT:      Cell = Cell(29);
 //Clearing constant
 const INIT:      Cell = Cell(0xDEADC0DE);
 
-const NUM_OPS:   uint = WAIT.0 + 1 ;
+const NUM_OPS:   CellInt  = WAIT.0 + 1 ;
 
 fn main() {
     let mut vm = VM { ..Default::default() };
