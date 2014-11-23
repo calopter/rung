@@ -39,8 +39,7 @@ impl Default for VM {
             address : [Cell(NOP), ..ADDRESSES],
             ports: [Cell(NOP), ..PORTS],
             image: {
-                    let img = box Image([INIT, ..IMAGE_SIZE]);
-                    img
+                     box Image([INIT, ..IMAGE_SIZE])
             },
             stats: [0, ..30], //replace: NUM_OPS
             max_rsp: ADDRESSES,
