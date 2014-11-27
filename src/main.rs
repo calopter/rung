@@ -38,8 +38,8 @@ impl Default for VM {
             data : [Cell(NOP), ..STACK_DEPTH],
             address : [Cell(NOP), ..ADDRESSES],
             ports: [Cell(NOP), ..PORTS],
-            image:  box Image([INIT, ..IMAGE_SIZE]) ,
-            stats: [0, ..30], //replace: NUM_OPS
+            image: box Image([INIT, ..IMAGE_SIZE]),
+            stats: [0, ..30],
             max_rsp: ADDRESSES,
             max_sp: STACK_DEPTH,
             filename: String::new(),
@@ -113,9 +113,10 @@ const IN:       CellInt = 27;
 const OUT:      CellInt = 28;
 const WAIT:     CellInt = 29;
 
+const NEWCONST: int = -5 ;
+
 //Clearing constant
 const INIT:      Cell = Cell(0x0000DEAD);
-
 const NUM_OPS:   CellInt  = WAIT + 1 ;
 
 fn main() {
