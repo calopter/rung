@@ -1,30 +1,25 @@
 // Rung: A Rust Ngaro VM
-//
-// Rusty stuff
-//
 
 #![feature(tuple_indexing)]
+
 use std::default::Default;
 use std::fmt;
 
 type CellInt = i32 ;
 
-
 struct VM {
-    sp: CellInt,
-    ip: CellInt,
-    rsp: CellInt,
-    data: [Cell, ..STACK_DEPTH],
-    address: [Cell, ..ADDRESSES],
-    ports: [Cell, ..PORTS],
-    image: Box<Image>,
-//    stats: [uint, ..NUM_OPS],
-// *requires compiler to catch up with syntax
-    stats: [uint, ..30],
-    max_rsp: uint,
-    max_sp: uint,
-    filename: String,
-    request: String,
+    sp:        CellInt,
+    ip:        CellInt,
+    rsp:       CellInt,
+    data:      [Cell, ..STACK_DEPTH],
+    address:   [Cell, ..ADDRESSES],
+    ports:     [Cell, ..PORTS],
+    image:     Box<Image>,
+    stats:     [uint, ..30],
+    max_rsp:   uint,
+    max_sp:    uint,
+    filename:  String,
+    request:   String,
 }
 
 struct Image([Cell, ..IMAGE_SIZE]);
@@ -32,38 +27,35 @@ struct Image([Cell, ..IMAGE_SIZE]);
 impl Default for VM {
     fn default() -> VM {
         VM {
-            sp: 0,
-            ip: 128,
-            rsp: 256,
-            data : [Cell(NOP), ..STACK_DEPTH],
-            address : [Cell(NOP), ..ADDRESSES],
-            ports: [Cell(NOP), ..PORTS],
-            image: box Image([INIT, ..IMAGE_SIZE]),
-            stats: [0, ..30],
-            max_rsp: ADDRESSES,
-            max_sp: STACK_DEPTH,
-            filename: String::new(),
-            request: String::new(),
+            sp:        0,
+            ip:        128,
+            rsp:       256,
+            data:      [Cell(NOP), ..STACK_DEPTH],
+            address:   [Cell(NOP), ..ADDRESSES],
+            ports:     [Cell(NOP), ..PORTS],
+            image:     box Image([INIT, ..IMAGE_SIZE]),
+            stats:     [0, ..30],
+            max_rsp:   ADDRESSES,
+            max_sp:    STACK_DEPTH,
+            filename:  String::new(),
+            request:   String::new(),
 
         }
     }
 }
-impl fmt::Show for VM {
-/*    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "({}, {})", self.sp.0, self.ip.0)
-    } */
 
+impl fmt::Show for VM {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut s = String::new();
         s.push_str("Stack: ");
         s.push_str(self.ip.to_string().as_slice());
-      //  s.push_str("
         write!(f,"{}",s)
     }
 
 }
 
 struct Cell (CellInt);
+
 impl fmt::Show for Cell {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write! (f, "{}", self.0)
@@ -71,15 +63,15 @@ impl fmt::Show for Cell {
 }
 
 //Virtual Machine Parameters
-const STACK_DEPTH:           uint =  128;
-const IMAGE_SIZE:            uint =  1000000;
-const ADDRESSES:             uint =  1024;
-const PORTS:                 uint =  12;
-const MAX_FILE_NAME:         uint =  1024;
-const MAX_REQUEST_LENGTH:    uint =  1024;
-const MAX_OPEN_FILES:        uint =  8;
-const LOCAL:        &'static str  = "retroImage" ;
-const CELLSIZE:              uint = 32;
+const STACK_DEPTH:         uint =  128;
+const IMAGE_SIZE:          uint =  1000000;
+const ADDRESSES:           uint =  1024;
+const PORTS:               uint =  12;
+const MAX_FILE_NAME:       uint =  1024;
+const MAX_REQUEST_LENGTH:  uint =  1024;
+const MAX_OPEN_FILES:      uint =  8;
+const LOCAL:       &'static str = "retroImage" ;
+const CELLSIZE:            uint = 32;
 
 //Ngaro VM Opcodes
 const NOP:      CellInt = 0;
@@ -125,6 +117,6 @@ fn main() {
     println!("VM State: x: {} , y: {}, rsp: {} ", vm.sp, vm.ip, vm.rsp  );
     println!("VM (Formatted) : {}", vm);
     let image = &vm.image.0;
-    println!("Printed from the Image: {:x}", image[5].0);
+    println!("Printed from the Image: {:08x}", image[5].0);
 
 }
