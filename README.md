@@ -1,4 +1,4 @@
 rung
 ====
 
-A Rust Ngaro VM
+A Rust Nga VM
