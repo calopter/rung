@@ -49,10 +49,10 @@ impl Default for VM {
             sp:        0,
             ip:        0,
             rp:        0,
-            data:      [Cell(NOP); STACK_DEPTH],
-            address:   [Cell(NOP); ADDRESSES],
-            memory:    [Cell(NOP); IMAGE_SIZE],
-            ports:     [Cell(NOP); PORTS],
+            data:      [Cell::Opcode(NOP); STACK_DEPTH],
+            address:   [Cell::Opcode(NOP); ADDRESSES],
+            memory:    [Cell::Opcode(NOP); IMAGE_SIZE],
+            ports:     [Cell::Opcode(NOP); PORTS],
             max_rsp:   ADDRESSES as u32,
             max_sp:    STACK_DEPTH as u32,
             filename:  String::new(),
@@ -75,7 +75,9 @@ impl fmt::Display for VM {
 struct Image([Cell; IMAGE_SIZE]);
 
 #[derive (Clone, Copy)]
-struct Cell (VM_opcode);
+enum Cell {
+    Int(CellInt), Opcode(VM_opcode)
+}
 
 impl fmt::Display for Cell {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -152,7 +154,111 @@ fn inst_lit(vm: &mut VM) {
     vm.ip += 1;
     *vm.tos() = vm.memory[vm.ip];
 }
-    
+
+fn inst_dup(vm: &mut VM) {
+   vm.sp += 1;
+   vm.data[vm.sp] = *vm.nos();
+}
+
+
+fn inst_drop(vm: &mut VM) {
+    vm.data[vm.sp] = Cell::Int(0);
+    if vm.sp - 1 < 0 {
+        vm.ip = IMAGE_SIZE;
+    }
+}
+
+fn inst_swap(vm: &mut VM) {
+
+}
+
+fn inst_push(vm: &mut VM) {
+
+}
+
+fn inst_pop(vm: &mut VM) {
+
+}
+
+fn inst_jump(vm: &mut VM) {
+
+}
+
+fn inst_call(vm: &mut VM) {
+
+}
+
+fn inst_ccall(vm: &mut VM) {
+
+}
+
+fn inst_return(vm: &mut VM) {
+
+}
+
+fn inst_equal(vm: &mut VM) {
+
+}
+
+fn inst_neq(vm: &mut VM) {
+
+}
+
+fn inst_lt(vm: &mut VM) {
+
+}
+
+fn inst_gt(vm: &mut VM) {
+
+}
+
+fn inst_fetch(vm: &mut VM) {
+
+}
+
+fn inst_store(vm: &mut VM) {
+
+}
+
+fn inst_add(vm: &mut VM) {
+
+}
+
+fn inst_sub(vm: &mut VM) {
+
+}
+
+fn inst_mul(vm: &mut VM) {
+
+}
+
+fn inst_divmod(vm: &mut VM) {
+
+}
+
+fn inst_and(vm: &mut VM) {
+
+}
+
+fn inst_or(vm: &mut VM) {
+
+}
+
+fn inst_xor(vm: &mut VM) {
+
+}
+
+fn inst_shift(vm: &mut VM) {
+
+}
+
+fn inst_zret(vm: &mut VM) {
+
+}
+
+fn inst_end(vm: &mut VM) {
+
+}
 
 const NUM_OPS: CellInt = (END as i32) + 1 ;
 
