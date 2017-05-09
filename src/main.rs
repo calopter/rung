@@ -36,7 +36,7 @@ impl VM {
 
     fn drop(&mut self) {
         self.data[self.sp] = 0;
-        if self.sp - 1 < 0 {
+        if self.sp == 0 {
             self.ip = IMAGE_SIZE;
         }
     }
@@ -224,22 +224,22 @@ impl VM {
             let opcode = self.memory[self.ip];
             self.process_opcode(opcode);
             self.ip += 1;
-            println!("{:?}, {}, {}", self.data, self.sp, self.data[self.sp]);
+            println!("data: {:?}, sp: {}, tos: {}", self.data, self.sp, self.data[self.sp]);
         }
     }
 }
 
 //Virtual Machine Parameters
-const IMAGE_SIZE:          usize = 4;
+const IMAGE_SIZE:          usize = 5;
 const ADDRESSES:           usize = 128;
 const STACK_DEPTH:         usize = 8;
-const CELLSIZE:            u32 = 32;
-const NUM_OPS: CellInt = 26;
+//const CELLSIZE:            u32 = 32;
+//const NUM_OPS: CellInt = 26;
 
 fn main() {
     let mut vm = VM { sp: 0, ip: 0, rp: 0, 
                       data: [0; STACK_DEPTH], address: [0; ADDRESSES],
-                      memory: [1, 1, 2, 2] };
+                      memory: [1, 1, 1, 2, 4] };
     
     vm.eval();
 }
