@@ -16,7 +16,7 @@ struct VM {
 
     ports:     [Cell; PORTS],
 
-    image:     Box<Image>,
+    memory:    [Cell; IMAGE_SIZE],
     max_rsp:   u32,
     max_sp:    u32,
     filename:  String,
@@ -24,16 +24,16 @@ struct VM {
 }
 
 impl VM {
-    fn tos(&self) -> Cell {
-        self.data[self.sp]
+    fn tos(&self) -> &mut Cell {
+        &mut self.data[self.sp]
     }
 
-    fn nos(&self) -> Cell {
-        self.data[self.sp - 1]
+    fn nos(&self) -> &mut Cell {
+        &mut self.data[self.sp - 1]
     }
 
-    fn tors(&self) -> Cell {
-        self.address[self.rp]
+    fn tors(&self) -> &mut Cell {
+        &mut self.address[self.rp]
     }
 
     //see Nga.md line 140
@@ -51,8 +51,8 @@ impl Default for VM {
             rp:        0,
             data:      [Cell(NOP); STACK_DEPTH],
             address:   [Cell(NOP); ADDRESSES],
+            memory:    [Cell(NOP); IMAGE_SIZE],
             ports:     [Cell(NOP); PORTS],
-            image:     Box::new(Image([Cell(NOP); IMAGE_SIZE])),
             max_rsp:   ADDRESSES as u32,
             max_sp:    STACK_DEPTH as u32,
             filename:  String::new(),
@@ -143,6 +143,17 @@ fn from_i32(n: i32) -> Option<VM_opcode> {
 
 use VM_opcode::*;
 
+fn inst_nop() {
+    //avoid dead code elimination?
+}
+
+fn inst_lit(vm: &mut VM) {
+    vm.sp += 1;
+    vm.ip += 1;
+    *vm.tos() = vm.memory[vm.ip];
+}
+    
+
 const NUM_OPS: CellInt = (END as i32) + 1 ;
 
 fn main() {
@@ -150,7 +161,7 @@ fn main() {
  //   let (Cell(rsp), Cell(sp), Cell(ip)) = (vm.rp, vm.sp, vm.ip);
     println!("VM State: x: {} , y: {}, rp: {} ", vm.sp, vm.ip, vm.rp);
     println!("VM (Formatted) : {}", vm);
-    let image = &vm.image.0;
-    println!("Printed from the Image: {:08x}", image[5].0);
+    //let image = &vm.image.0;
+    //println!("Printed from the Image: {:08x}", image[5].0);
 
 }
