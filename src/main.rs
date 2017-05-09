@@ -224,7 +224,7 @@ impl VM {
             let opcode = self.memory[self.ip];
             self.process_opcode(opcode);
             self.ip += 1;
-            println!("{:?}, {}", self.data, self.sp);
+            println!("{:?}, {}, {}", self.data, self.sp, self.data[self.sp]);
         }
     }
 }
