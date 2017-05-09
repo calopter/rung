@@ -169,7 +169,9 @@ fn inst_drop(vm: &mut VM) {
 }
 
 fn inst_swap(vm: &mut VM) {
-
+    let a = *vm.tos();
+    *vm.tos() = *vm.nos();
+    *vm.nos() = a;
 }
 
 fn inst_push(vm: &mut VM) {
