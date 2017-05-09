@@ -11,12 +11,17 @@ struct VM {
     sp:        usize,
     ip:        usize,
     rp:        usize,
-    data:      [Cell; STACK_DEPTH],
-    address:   [Cell; ADDRESSES],
 
-    ports:     [Cell; PORTS],
+    tos:       CellInt,
+    nos:       CellInt,
+    tors:      CellInt,
 
-    memory:    [Cell; IMAGE_SIZE],
+    data:      [CellInt; STACK_DEPTH],
+    address:   [CellInt; ADDRESSES],
+
+    ports:     [CellInt; PORTS],
+
+    memory:    [CellInt; IMAGE_SIZE],
     max_rsp:   u32,
     max_sp:    u32,
     filename:  String,
@@ -24,23 +29,153 @@ struct VM {
 }
 
 impl VM {
-    fn tos(&self) -> &mut Cell {
-        &mut self.data[self.sp]
-    }
-
-    fn nos(&self) -> &mut Cell {
-        &mut self.data[self.sp - 1]
-    }
-
-    fn tors(&self) -> &mut Cell {
-        &mut self.address[self.rp]
-    }
-
     //see Nga.md line 140
-    fn load_image(path: &str) -> CellInt {}
+    fn load_image(path: &str) -> CellInt {
+        0
+    }
 
     //516
     fn process_opcode(&self, opcode: VM_opcode) {} 
+
+    // instructions //
+    //              //
+    //              //
+
+    fn nop() {
+        //avoid dead code elimination?
+    }
+
+    fn lit(&mut self) {
+        self.sp += 1;
+        self.ip += 1;
+        self.tos = self.memory[self.ip];
+    }
+
+    fn dup(&mut self) {
+       self.sp += 1;
+       self.data[self.sp] = self.nos;
+    }
+
+
+    fn drop(&mut self) {
+        self.data[self.sp] = 0;
+        if self.sp - 1 < 0 {
+            self.ip = IMAGE_SIZE;
+        }
+    }
+
+    fn swap(&mut self) {
+        let a = self.tos;
+        self.tos = self.nos;
+        self.nos = a;
+    }
+
+    fn push(&mut self) {
+        self.rp += 1;
+        self.tors = self.tos;
+        self.drop();
+    }
+
+    fn pop(&mut self) {
+        self.sp += 1;
+        self.tos = self.tors;
+        self.rp -= 1;
+    }
+
+    fn jump(&mut self) {
+        self.ip = (self.tos - 1) as usize;
+        self.drop();
+    }
+
+    fn call(&mut self) {
+        self.rp += 1;
+        self.tors = self.ip as CellInt;
+        self.ip = (self.tos - 1) as usize;
+        self.drop();
+    }
+
+    fn ccall(&mut self) {
+        let a = self.tos as usize;
+        self.drop();
+        let b = self.tos;
+        self.drop();
+        if b != 0 {
+            self.rp += 1;
+            self.tors = self.ip as CellInt;
+            self.ip = a - 1;
+        }
+    }
+
+    fn ret(&mut self) {
+        self.ip = self.tors as usize;
+        self.rp -= 1;
+    }
+
+    fn eq(&mut self) {
+
+    }
+
+    fn neq(&mut self) {
+
+    }
+
+    fn lt(&mut self) {
+
+    }
+
+    fn gt(&mut self) {
+
+    }
+
+    fn fetch(&mut self) {
+
+    }
+
+    fn store(&mut self) {
+
+    }
+
+    fn add(&mut self) {
+
+    }
+
+    fn sub(&mut self) {
+
+    }
+
+    fn mul(&mut self) {
+
+    }
+
+    fn divmod(&mut self) {
+
+    }
+
+    fn and(&mut self) {
+
+    }
+
+    fn or(&mut self) {
+
+    }
+
+    fn xor(&mut self) {
+
+    }
+
+    fn shift(&mut self) {
+
+    }
+
+    fn zret(&mut self) {
+
+    }
+
+    fn end(&mut self) {
+
+    }
+
+
 }
 
 impl Default for VM {
@@ -49,10 +184,13 @@ impl Default for VM {
             sp:        0,
             ip:        0,
             rp:        0,
-            data:      [Cell::Opcode(NOP); STACK_DEPTH],
-            address:   [Cell::Opcode(NOP); ADDRESSES],
-            memory:    [Cell::Opcode(NOP); IMAGE_SIZE],
-            ports:     [Cell::Opcode(NOP); PORTS],
+            tos:       0,
+            nos:       0,
+            tors:      0,
+            data:      [NOP as CellInt; STACK_DEPTH],
+            address:   [NOP as CellInt; ADDRESSES],
+            memory:    [NOP as CellInt; IMAGE_SIZE],
+            ports:     [NOP as CellInt; PORTS],
             max_rsp:   ADDRESSES as u32,
             max_sp:    STACK_DEPTH as u32,
             filename:  String::new(),
@@ -81,7 +219,7 @@ enum Cell {
 
 impl fmt::Display for Cell {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write! (f, "{}", self.0)
+        write! (f, "{}", self)
     }
 }
 
@@ -98,7 +236,7 @@ const LOCAL:       &'static str = "retroImage" ;
 const CELLSIZE:            u32 = 32;
 
 //Nga VM Opcodes
-#[derive (Clone, Copy)]
+#[derive (Clone, Copy, Debug)]
 enum VM_opcode {
     NOP,
     LIT,
@@ -131,12 +269,12 @@ enum VM_opcode {
 
 impl fmt::Display for VM_opcode {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write! (f, "{}", self as i32)
+        write! (f, "{}", self)
     }
 }
 
-fn from_i32(n: i32) -> Option<VM_opcode> {
-    if n >= NOP as i32 && n <= END as i32 {
+fn from_u8(n: u8) -> Option<VM_opcode> {
+    if n >= NOP as u8 && n <= END as u8 {
         Some(unsafe {std::mem::transmute(n)})
     } else {
         None
@@ -145,122 +283,6 @@ fn from_i32(n: i32) -> Option<VM_opcode> {
 
 use VM_opcode::*;
 
-fn inst_nop() {
-    //avoid dead code elimination?
-}
-
-fn inst_lit(vm: &mut VM) {
-    vm.sp += 1;
-    vm.ip += 1;
-    *vm.tos() = vm.memory[vm.ip];
-}
-
-fn inst_dup(vm: &mut VM) {
-   vm.sp += 1;
-   vm.data[vm.sp] = *vm.nos();
-}
-
-
-fn inst_drop(vm: &mut VM) {
-    vm.data[vm.sp] = Cell::Int(0);
-    if vm.sp - 1 < 0 {
-        vm.ip = IMAGE_SIZE;
-    }
-}
-
-fn inst_swap(vm: &mut VM) {
-    let a = *vm.tos();
-    *vm.tos() = *vm.nos();
-    *vm.nos() = a;
-}
-
-fn inst_push(vm: &mut VM) {
-
-}
-
-fn inst_pop(vm: &mut VM) {
-
-}
-
-fn inst_jump(vm: &mut VM) {
-
-}
-
-fn inst_call(vm: &mut VM) {
-
-}
-
-fn inst_ccall(vm: &mut VM) {
-
-}
-
-fn inst_return(vm: &mut VM) {
-
-}
-
-fn inst_equal(vm: &mut VM) {
-
-}
-
-fn inst_neq(vm: &mut VM) {
-
-}
-
-fn inst_lt(vm: &mut VM) {
-
-}
-
-fn inst_gt(vm: &mut VM) {
-
-}
-
-fn inst_fetch(vm: &mut VM) {
-
-}
-
-fn inst_store(vm: &mut VM) {
-
-}
-
-fn inst_add(vm: &mut VM) {
-
-}
-
-fn inst_sub(vm: &mut VM) {
-
-}
-
-fn inst_mul(vm: &mut VM) {
-
-}
-
-fn inst_divmod(vm: &mut VM) {
-
-}
-
-fn inst_and(vm: &mut VM) {
-
-}
-
-fn inst_or(vm: &mut VM) {
-
-}
-
-fn inst_xor(vm: &mut VM) {
-
-}
-
-fn inst_shift(vm: &mut VM) {
-
-}
-
-fn inst_zret(vm: &mut VM) {
-
-}
-
-fn inst_end(vm: &mut VM) {
-
-}
 
 const NUM_OPS: CellInt = (END as i32) + 1 ;
 
