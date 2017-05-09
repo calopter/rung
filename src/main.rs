@@ -1,10 +1,5 @@
 // Rung: A Rust Nga VM
 
-#![feature(tuple_indexing)]
-
-use std::default::Default;
-use std::fmt;
-
 type CellInt = i32;
 
 struct VM {
@@ -12,20 +7,9 @@ struct VM {
     ip:        usize,
     rp:        usize,
 
-    tos:       CellInt,
-    nos:       CellInt,
-    tors:      CellInt,
-
     data:      [CellInt; STACK_DEPTH],
     address:   [CellInt; ADDRESSES],
-
-    ports:     [CellInt; PORTS],
-
     memory:    [CellInt; IMAGE_SIZE],
-    max_rsp:   u32,
-    max_sp:    u32,
-    filename:  String,
-    request:   String,
 }
 
 impl VM {
@@ -34,26 +18,19 @@ impl VM {
         0
     }
 
-    //516
-    fn process_opcode(&self, opcode: VM_opcode) {} 
-
-    // instructions //
-    //              //
-    //              //
-
-    fn nop() {
+    fn nop(&self) {
         //avoid dead code elimination?
     }
 
     fn lit(&mut self) {
         self.sp += 1;
         self.ip += 1;
-        self.tos = self.memory[self.ip];
+        self.data[self.sp] = self.memory[self.ip];
     }
 
     fn dup(&mut self) {
        self.sp += 1;
-       self.data[self.sp] = self.nos;
+       self.data[self.sp] = self.data[self.sp - 1];
     }
 
 
@@ -65,142 +42,142 @@ impl VM {
     }
 
     fn swap(&mut self) {
-        let a = self.tos;
-        self.tos = self.nos;
-        self.nos = a;
+        let a = self.data[self.sp];
+        self.data[self.sp] = self.data[self.sp - 1];
+        self.data[self.sp - 1] = a;
     }
 
     fn push(&mut self) {
         self.rp += 1;
-        self.tors = self.tos;
+        self.address[self.rp] = self.data[self.sp];
         self.drop();
     }
 
     fn pop(&mut self) {
         self.sp += 1;
-        self.tos = self.tors;
+        self.data[self.sp] = self.address[self.rp];
         self.rp -= 1;
     }
 
     fn jump(&mut self) {
-        self.ip = (self.tos - 1) as usize;
+        self.ip = (self.data[self.sp] - 1) as usize;
         self.drop();
     }
 
     fn call(&mut self) {
         self.rp += 1;
-        self.tors = self.ip as CellInt;
-        self.ip = (self.tos - 1) as usize;
+        self.address[self.rp] = self.ip as CellInt;
+        self.ip = (self.data[self.sp] - 1) as usize;
         self.drop();
     }
 
     fn ccall(&mut self) {
-        let a = self.tos as usize;
+        let a = self.data[self.sp] as usize;
         self.drop();
-        let b = self.tos;
+        let b = self.data[self.sp];
         self.drop();
         if b != 0 {
             self.rp += 1;
-            self.tors = self.ip as CellInt;
+            self.address[self.rp] = self.ip as CellInt;
             self.ip = a - 1;
         }
     }
 
     fn ret(&mut self) {
-        self.ip = self.tors as usize;
+        self.ip = self.address[self.rp] as usize;
         self.rp -= 1;
     }
 
     fn eq(&mut self) {
-        self.nos = if self.nos == self.tos {-1} else {0};
+        self.data[self.sp - 1] = if self.data[self.sp - 1] == self.data[self.sp] {-1} else {0};
         self.drop();
     }
 
     fn neq(&mut self) {
-        self.nos = if self.nos != self.tos {-1} else {0};
+        self.data[self.sp - 1] = if self.data[self.sp - 1] != self.data[self.sp] {-1} else {0};
         self.drop();
     }
 
     fn lt(&mut self) {
-        self.nos = if self.nos < self.tos {-1} else {0};
+        self.data[self.sp - 1] = if self.data[self.sp - 1] < self.data[self.sp] {-1} else {0};
         self.drop();
     }
 
     fn gt(&mut self) {
-        self.nos = if self.nos > self.tos {-1} else {0};
+        self.data[self.sp - 1] = if self.data[self.sp - 1] > self.data[self.sp] {-1} else {0};
         self.drop();
     }
 
     fn fetch(&mut self) {
-        match self.tos {
-            -1 => self.tos = (self.sp - 1) as CellInt,
-            -2 => self.tos = self.rp as CellInt,
-            -3 => self.tos = self.memory[self.tos as usize],
-            _  => self.tos = self.memory[self.tos as usize],
+        match self.data[self.sp] {
+            -1 => self.data[self.sp] = (self.sp - 1) as CellInt,
+            -2 => self.data[self.sp] = self.rp as CellInt,
+            -3 => self.data[self.sp] = self.memory[self.data[self.sp] as usize],
+            _  => self.data[self.sp] = self.memory[self.data[self.sp] as usize],
         }
     }
 
     fn store(&mut self) {
-        self.memory[self.tos as usize] = self.nos;
+        self.memory[self.data[self.sp] as usize] = self.data[self.sp - 1];
         self.drop();
         self.drop();
     }
 
     fn add(&mut self) {
-        self.nos += self.tos;
+        self.data[self.sp - 1] += self.data[self.sp];
         self.drop();
     }
 
     fn sub(&mut self) {
-        self.nos -= self.tos;
+        self.data[self.sp - 1] -= self.data[self.sp];
         self.drop();
     }
 
     fn mul(&mut self) {
-        self.nos *= self.tos;
+        self.data[self.sp - 1] *= self.data[self.sp];
         self.drop();
     }
 
     fn divmod(&mut self) {
-        let (a, b) = (self.tos, self.nos);
-        self.tos = b / a;
-        self.nos = b % a;
+        let (a, b) = (self.data[self.sp], self.data[self.sp - 1]);
+        self.data[self.sp] = b / a;
+        self.data[self.sp - 1] = b % a;
     }
 
     fn and(&mut self) {
-        self.nos = self.tos & self.nos;
+        self.data[self.sp - 1] = self.data[self.sp] & self.data[self.sp - 1];
         self.drop();
     }
 
     fn or(&mut self) {
-        self.nos = self.tos | self.nos;
+        self.data[self.sp - 1] = self.data[self.sp] | self.data[self.sp - 1];
         self.drop();
     }
 
     fn xor(&mut self) {
-        self.nos = self.tos ^ self.nos;
+        self.data[self.sp - 1] = self.data[self.sp] ^ self.data[self.sp - 1];
         self.drop();
     }
 
     //?
     fn shift(&mut self) {
-        let (x, y) = (self.tos, self.nos);
-        if self.tos < 0 {
-            self.nos = self.nos << (self.tos * -1);
+        let (x, y) = (self.data[self.sp], self.data[self.sp - 1]);
+        if self.data[self.sp] < 0 {
+            self.data[self.sp - 1] = self.data[self.sp - 1] << (self.data[self.sp] * -1);
         } else {
             if x < 0 && y > 0 {
-                self.nos = x >> y | !(!0 >> y);
+                self.data[self.sp - 1] = x >> y | !(!0 >> y);
             } else {
-                self.nos = x >> y;
+                self.data[self.sp - 1] = x >> y;
             }
         }
         self.drop();
     }
 
     fn zret(&mut self) {
-        if self.tos == 0 {
+        if self.data[self.sp] == 0 {
             self.drop();
-            self.ip = self.tors as usize;
+            self.ip = self.address[self.rp] as usize;
             self.rp -= 1;
         }
     }
@@ -209,123 +186,60 @@ impl VM {
         self.ip = IMAGE_SIZE;
     }
 
+    fn process_opcode(&mut self, opcode: CellInt) {
+        match opcode {
+            0 => self.nop(),
+            1 => self.lit(),
+            2 => self.dup(),
+            3 => self.drop(),
+            4 => self.swap(),
+            5 => self.push(),
+            6 => self.pop(),
+            7 => self.jump(),
+            8 => self.call(),
+            9 => self.ccall(),
+            10 => self.ret(),
+            11 => self.eq(),
+            12 => self.neq(),
+            13 => self.lt(),
+            14 => self.gt(),
+            15 => self.fetch(),
+            16 => self.store(),
+            17 => self.add(),
+            18 => self.sub(),
+            19 => self.mul(),
+            20 => self.divmod(),
+            21 => self.and(),
+            22 => self.or(),
+            23 => self.xor(),
+            24 => self.shift(),
+            25 => self.zret(),
+            26 => self.end(),
+            _ => self.end(), //throw error
+        } 
+    }
 
-}
-
-impl Default for VM {
-    fn default() -> VM {
-        VM {
-            sp:        0,
-            ip:        0,
-            rp:        0,
-            tos:       0,
-            nos:       0,
-            tors:      0,
-            data:      [NOP as CellInt; STACK_DEPTH],
-            address:   [NOP as CellInt; ADDRESSES],
-            memory:    [NOP as CellInt; IMAGE_SIZE],
-            ports:     [NOP as CellInt; PORTS],
-            max_rsp:   ADDRESSES as u32,
-            max_sp:    STACK_DEPTH as u32,
-            filename:  String::new(),
-            request:   String::new(),
-
+    fn eval(&mut self) {
+        while self.ip < IMAGE_SIZE {
+            let opcode = self.memory[self.ip];
+            self.process_opcode(opcode);
+            self.ip += 1;
+            println!("{:?}, {}", self.data, self.sp);
         }
     }
 }
 
-impl fmt::Display for VM {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let mut s = String::new();
-        s.push_str("Stack: ");
-        s.push_str(self.ip.to_string().as_str());
-        write!(f,"{}",s)
-    }
-
-}
-
-struct Image([Cell; IMAGE_SIZE]);
-
-#[derive (Clone, Copy)]
-enum Cell {
-    Int(CellInt), Opcode(VM_opcode)
-}
-
-impl fmt::Display for Cell {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write! (f, "{}", self)
-    }
-}
-
 //Virtual Machine Parameters
-const IMAGE_SIZE:          usize =  524288;
-const ADDRESSES:           usize =  128;
-const STACK_DEPTH:         usize =  32;
-
-const PORTS:               usize =  12;
-const MAX_FILE_NAME:       u32 =  1024;
-const MAX_REQUEST_LENGTH:  u32 =  1024;
-const MAX_OPEN_FILES:      u32 =  8;
-const LOCAL:       &'static str = "retroImage" ;
+const IMAGE_SIZE:          usize = 4;
+const ADDRESSES:           usize = 128;
+const STACK_DEPTH:         usize = 8;
 const CELLSIZE:            u32 = 32;
-
-//Nga VM Opcodes
-#[derive (Clone, Copy, Debug)]
-enum VM_opcode {
-    NOP,
-    LIT,
-    DUP,
-    DROP,
-    SWAP,
-    PUSH,
-    POP,
-    JUMP,
-    CALL,
-    CCALL,
-    RETURN,
-    EQ,
-    NEQ,
-    LT,
-    GT,
-    FETCH,
-    STORE,
-    ADD,
-    SUB,
-    MUL,
-    DIVMOD,
-    AND,
-    OR,
-    XOR,
-    SHIFT,
-    ZRET,
-    END,
-}
-
-impl fmt::Display for VM_opcode {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write! (f, "{}", self)
-    }
-}
-
-fn from_u8(n: u8) -> Option<VM_opcode> {
-    if n >= NOP as u8 && n <= END as u8 {
-        Some(unsafe {std::mem::transmute(n)})
-    } else {
-        None
-    }
-}
-
-use VM_opcode::*;
-
-
-const NUM_OPS: CellInt = (END as i32) + 1 ;
+const NUM_OPS: CellInt = 26;
 
 fn main() {
-    let mut vm: VM = Default::default(); //syntax for overide { ..Default::default() };
- //   let (Cell(rsp), Cell(sp), Cell(ip)) = (vm.rp, vm.sp, vm.ip);
-    println!("VM State: x: {} , y: {}, rp: {} ", vm.sp, vm.ip, vm.rp);
-    println!("VM (Formatted) : {}", vm);
-    //let image = &vm.image.0;
-    //println!("Printed from the Image: {:08x}", image[5].0);
-
+    let mut vm = VM { sp: 0, ip: 0, rp: 0, 
+                      data: [0; STACK_DEPTH], address: [0; ADDRESSES],
+                      memory: [1, 1, 2, 2] };
+    
+    vm.eval();
 }
