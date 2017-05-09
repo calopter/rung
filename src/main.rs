@@ -8,35 +8,51 @@ use std::fmt;
 type CellInt = i32;
 
 struct VM {
-    sp:        CellInt,
-    ip:        CellInt,
-    rsp:       CellInt,
+    sp:        usize,
+    ip:        usize,
+    rp:        usize,
     data:      [Cell; STACK_DEPTH],
     address:   [Cell; ADDRESSES],
 
     ports:     [Cell; PORTS],
 
     image:     Box<Image>,
-    stats:     [u32; 30],
     max_rsp:   u32,
     max_sp:    u32,
     filename:  String,
     request:   String,
 }
 
-struct Image([Cell; IMAGE_SIZE]);
+impl VM {
+    fn tos(&self) -> Cell {
+        self.data[self.sp]
+    }
+
+    fn nos(&self) -> Cell {
+        self.data[self.sp - 1]
+    }
+
+    fn tors(&self) -> Cell {
+        self.address[self.rp]
+    }
+
+    //see Nga.md line 140
+    fn load_image(path: &str) -> CellInt {}
+
+    //516
+    fn process_opcode(&self, opcode: VM_opcode) {} 
+}
 
 impl Default for VM {
     fn default() -> VM {
         VM {
             sp:        0,
-            ip:        128,
-            rsp:       256,
+            ip:        0,
+            rp:        0,
             data:      [Cell(NOP); STACK_DEPTH],
             address:   [Cell(NOP); ADDRESSES],
             ports:     [Cell(NOP); PORTS],
-            image:     Box::new(Image([INIT; IMAGE_SIZE])),
-            stats:     [0; 30],
+            image:     Box::new(Image([Cell(NOP); IMAGE_SIZE])),
             max_rsp:   ADDRESSES as u32,
             max_sp:    STACK_DEPTH as u32,
             filename:  String::new(),
@@ -56,8 +72,10 @@ impl fmt::Display for VM {
 
 }
 
+struct Image([Cell; IMAGE_SIZE]);
+
 #[derive (Clone, Copy)]
-struct Cell (CellInt);
+struct Cell (VM_opcode);
 
 impl fmt::Display for Cell {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -66,9 +84,10 @@ impl fmt::Display for Cell {
 }
 
 //Virtual Machine Parameters
-const STACK_DEPTH:         usize =  128;
-const IMAGE_SIZE:          usize =  1000000;
-const ADDRESSES:           usize =  1024;
+const IMAGE_SIZE:          usize =  524288;
+const ADDRESSES:           usize =  128;
+const STACK_DEPTH:         usize =  32;
+
 const PORTS:               usize =  12;
 const MAX_FILE_NAME:       u32 =  1024;
 const MAX_REQUEST_LENGTH:  u32 =  1024;
@@ -76,48 +95,60 @@ const MAX_OPEN_FILES:      u32 =  8;
 const LOCAL:       &'static str = "retroImage" ;
 const CELLSIZE:            u32 = 32;
 
-//Ngaro VM Opcodes
-const NOP:      CellInt = 0;
-const LIT:      CellInt = 1;
-const DUP:      CellInt = 2;
-const DROP:     CellInt = 3;
-const SWAP:     CellInt = 4;
-const PUSH:     CellInt = 5;
-const POP:      CellInt = 6;
-const LOOP:     CellInt = 7;
-const JUMP:     CellInt = 8;
-const RETURN:   CellInt = 9;
-const GT_JUMP:  CellInt = 10;
-const LT_JUMP:  CellInt = 11;
-const NE_JUMP:  CellInt = 12;
-const EQ_JUMP:  CellInt = 13;
-const FETCH:    CellInt = 14;
-const STORE:    CellInt = 15;
-const ADD:      CellInt = 16;
-const SUB:      CellInt = 17;
-const MUL:      CellInt = 18;
-const DIVMOD:   CellInt = 19;
-const AND:      CellInt = 20;
-const OR:       CellInt = 21;
-const XOR:      CellInt = 22;
-const SHL:      CellInt = 23;
-const ZERO_EXIT:CellInt = 24;
-const INC:      CellInt = 25;
-const DEC:      CellInt = 26;
-const IN:       CellInt = 27;
-const OUT:      CellInt = 28;
-const WAIT:     CellInt = 29;
+//Nga VM Opcodes
+#[derive (Clone, Copy)]
+enum VM_opcode {
+    NOP,
+    LIT,
+    DUP,
+    DROP,
+    SWAP,
+    PUSH,
+    POP,
+    JUMP,
+    CALL,
+    CCALL,
+    RETURN,
+    EQ,
+    NEQ,
+    LT,
+    GT,
+    FETCH,
+    STORE,
+    ADD,
+    SUB,
+    MUL,
+    DIVMOD,
+    AND,
+    OR,
+    XOR,
+    SHIFT,
+    ZRET,
+    END,
+}
 
-const NEWCONST: i32 = -5 ;
+impl fmt::Display for VM_opcode {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write! (f, "{}", self as i32)
+    }
+}
 
-//Clearing constant
-const INIT:      Cell = Cell(0x0000DEAD);
-const NUM_OPS:   CellInt  = WAIT + 1 ;
+fn from_i32(n: i32) -> Option<VM_opcode> {
+    if n >= NOP as i32 && n <= END as i32 {
+        Some(unsafe {std::mem::transmute(n)})
+    } else {
+        None
+    }
+}
+
+use VM_opcode::*;
+
+const NUM_OPS: CellInt = (END as i32) + 1 ;
 
 fn main() {
-    let mut vm = VM { ..Default::default() };
- //   let (Cell(rsp), Cell(sp), Cell(ip)) = (vm.rsp, vm.sp, vm.ip);
-    println!("VM State: x: {} , y: {}, rsp: {} ", vm.sp, vm.ip, vm.rsp  );
+    let mut vm: VM = Default::default(); //syntax for overide { ..Default::default() };
+ //   let (Cell(rsp), Cell(sp), Cell(ip)) = (vm.rp, vm.sp, vm.ip);
+    println!("VM State: x: {} , y: {}, rp: {} ", vm.sp, vm.ip, vm.rp);
     println!("VM (Formatted) : {}", vm);
     let image = &vm.image.0;
     println!("Printed from the Image: {:08x}", image[5].0);
