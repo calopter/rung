@@ -112,67 +112,101 @@ impl VM {
     }
 
     fn eq(&mut self) {
-
+        self.nos = if self.nos == self.tos {-1} else {0};
+        self.drop();
     }
 
     fn neq(&mut self) {
-
+        self.nos = if self.nos != self.tos {-1} else {0};
+        self.drop();
     }
 
     fn lt(&mut self) {
-
+        self.nos = if self.nos < self.tos {-1} else {0};
+        self.drop();
     }
 
     fn gt(&mut self) {
-
+        self.nos = if self.nos > self.tos {-1} else {0};
+        self.drop();
     }
 
     fn fetch(&mut self) {
-
+        match self.tos {
+            -1 => self.tos = (self.sp - 1) as CellInt,
+            -2 => self.tos = self.rp as CellInt,
+            -3 => self.tos = self.memory[self.tos as usize],
+            _  => self.tos = self.memory[self.tos as usize],
+        }
     }
 
     fn store(&mut self) {
-
+        self.memory[self.tos as usize] = self.nos;
+        self.drop();
+        self.drop();
     }
 
     fn add(&mut self) {
-
+        self.nos += self.tos;
+        self.drop();
     }
 
     fn sub(&mut self) {
-
+        self.nos -= self.tos;
+        self.drop();
     }
 
     fn mul(&mut self) {
-
+        self.nos *= self.tos;
+        self.drop();
     }
 
     fn divmod(&mut self) {
-
+        let (a, b) = (self.tos, self.nos);
+        self.tos = b / a;
+        self.nos = b % a;
     }
 
     fn and(&mut self) {
-
+        self.nos = self.tos & self.nos;
+        self.drop();
     }
 
     fn or(&mut self) {
-
+        self.nos = self.tos | self.nos;
+        self.drop();
     }
 
     fn xor(&mut self) {
-
+        self.nos = self.tos ^ self.nos;
+        self.drop();
     }
 
+    //?
     fn shift(&mut self) {
-
+        let (x, y) = (self.tos, self.nos);
+        if self.tos < 0 {
+            self.nos = self.nos << (self.tos * -1);
+        } else {
+            if x < 0 && y > 0 {
+                self.nos = x >> y | !(!0 >> y);
+            } else {
+                self.nos = x >> y;
+            }
+        }
+        self.drop();
     }
 
     fn zret(&mut self) {
-
+        if self.tos == 0 {
+            self.drop();
+            self.ip = self.tors as usize;
+            self.rp -= 1;
+        }
     }
 
     fn end(&mut self) {
-
+        self.ip = IMAGE_SIZE;
     }
 
 
