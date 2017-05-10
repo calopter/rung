@@ -6,3 +6,4 @@ authors = ["Aidan <calopter@gmail.com>"]
 [lib]
 
 [dependencies]
+byteorder = "1"
