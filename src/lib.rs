@@ -1,4 +1,9 @@
+extern crate byteorder;
+
 mod rung {
+    use std::fs::File;
+    use byteorder::{LittleEndian, ReadBytesExt};
+
     type CellInt = i32;
 
     pub struct VM {
@@ -12,9 +17,12 @@ mod rung {
     }
 
     impl VM {
-        //see Nga.md line 140
-        fn load_image(path: &str) -> CellInt {
-            0
+        fn load_image(&mut self, path: &str) {
+            let mut file = File::open(path).unwrap();
+
+            for i in self.memory.iter_mut() {
+                *i = file.read_i32::<LittleEndian>().unwrap();
+            }
         }
 
         fn nop(&self) {
@@ -223,14 +231,14 @@ mod rung {
                 let opcode = self.memory[self.ip];
                 self.process_opcode(opcode);
                 self.ip += 1;
-                println!("data: {:?}, sp: {}, tos: {}", self.data, self.sp, self.data[self.sp]);
+                //println!("data: {:?}, sp: {}, tos: {}", self.data, self.sp, self.data[self.sp]);
             }
         }
     }
 
-    const IMAGE_SIZE:          usize = 5;
+    const IMAGE_SIZE:          usize = 6547;
     const ADDRESSES:           usize = 128;
-    const STACK_DEPTH:         usize = 8;
+    const STACK_DEPTH:         usize = 32;
     //const CELLSIZE:          u32 = 32;
     //const NUM_OPS:           CellInt = 26;
 }
