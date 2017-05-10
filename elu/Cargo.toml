@@ -1,8 +1,8 @@
 [package]
-name = "rung"
+name = "elu"
 version = "0.1.0"
 authors = ["Aidan <calopter@gmail.com>"]
 
+[lib]
+
 [dependencies]
-rung_vm = {path = "rung_vm"}
-elu = {path = "elu"}
