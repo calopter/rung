@@ -2,17 +2,12 @@
 
 name = "rung_vm"
 version = "0.0.1"
-authors = [ "Sam Putman <atmanistan@gmail.com>", "Aidan Gross <calopter@gmail.com" ]
+authors = ["Aidan Gross <calopter@gmail.com"]
 description = "A Nga virtual machine."
 repository = "https://github.com/calopter/rung"
 readme = "README.md"
 keywords = ["nga", "stack machine", "Forth", "VM", "virtual machine"]
 license = "BSD-2-Clause"
 
-
-
-[[bin]]
-
-name = "rung_vm"
-
-
+[dependencies]
+byteorder = "1"
