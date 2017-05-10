@@ -9,10 +9,9 @@ readme = "README.md"
 keywords = ["nga", "stack machine", "Forth", "VM", "virtual machine"]
 license = "BSD-2-Clause"
 
-
+[dependencies]
+byteorder = "1"
 
 [[bin]]
 
 name = "rung_vm"
-
-

@@ -1,5 +1,10 @@
 // Rung: A Rust Nga VM
 
+extern crate byteorder;
+
+use std::fs::File;
+use byteorder::{LittleEndian, ReadBytesExt};
+
 type CellInt = i32;
 
 struct VM {
@@ -13,9 +18,12 @@ struct VM {
 }
 
 impl VM {
-    //see Nga.md line 140
-    fn load_image(path: &str) -> CellInt {
-        0
+    fn load_image(&mut self, path: &str) {
+        let mut file = File::open(path).unwrap();
+
+        for i in self.memory.iter_mut() {
+            *i = file.read_i32::<LittleEndian>().unwrap();
+        }
     }
 
     fn nop(&self) {
@@ -229,17 +237,17 @@ impl VM {
     }
 }
 
-//Virtual Machine Parameters
-const IMAGE_SIZE:          usize = 5;
+const IMAGE_SIZE:          usize = 6547;
 const ADDRESSES:           usize = 128;
-const STACK_DEPTH:         usize = 8;
+const STACK_DEPTH:         usize = 32;
 //const CELLSIZE:            u32 = 32;
 //const NUM_OPS: CellInt = 26;
 
 fn main() {
     let mut vm = VM { sp: 0, ip: 0, rp: 0, 
                       data: [0; STACK_DEPTH], address: [0; ADDRESSES],
-                      memory: [1, 1, 1, 2, 4] };
+                      memory: [0; IMAGE_SIZE] };
     
+    vm.load_image("ngaImage");
     vm.eval();
 }
