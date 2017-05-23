@@ -1,7 +1,7 @@
 extern crate byteorder;
 
 use std::fs::File;
-use byteorder::{LittleEndian, ReadBytesExt};
+use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
 type CellInt = i32;
 
@@ -38,7 +38,6 @@ impl VM {
        self.sp += 1;
        self.data[self.sp] = self.data[self.sp - 1];
     }
-
 
     fn drop(&mut self) {
         self.data[self.sp] = 0;
@@ -224,16 +223,42 @@ impl VM {
             _ => self.end(), //throw error
         } 
     }
+    
+    fn process_packed_opcodes(&mut self, opcode: CellInt) {
+        let mut raw = opcode;
+        for i in 0..4 {
+            self.process_opcode(raw & 0xFF);
+            raw = raw >> 8;
+        }
+    }
 
     fn eval(&mut self) {
         while self.ip < IMAGE_SIZE {
             let opcode = self.memory[self.ip];
-            self.process_opcode(opcode);
+            if validate_packed_opcodes(opcode) {
+                self.process_packed_opcodes(opcode)
+            } else {
+                self.process_opcode(opcode);
+            }
             self.ip += 1;
             //println!("data: {:?}, sp: {}, tos: {}", self.data, self.sp, self.data[self.sp]);
         }
     }
 }
+
+fn validate_packed_opcodes(opcode: CellInt) -> bool {
+        let mut raw = opcode;
+        let mut current: CellInt = 0;
+        let mut valid = true;
+        for i in 0..4 {
+            current = raw & 0xFF;
+            if !(current >= 0 && current <= 26) {
+                valid = false;
+            }
+            raw = raw >> 8;
+        }
+        valid
+    }
 
 const IMAGE_SIZE:          usize = 6547;
 const ADDRESSES:           usize = 128;
